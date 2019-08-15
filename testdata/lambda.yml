@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs8.10
+      Handler: index.handler
+      MemorySize: 128
+      Timeout: 60
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: AllAtOnce
+        Hooks:
+          PreTraffic: CodeDeployHook_LambdaWebsite
+      InlineCode: |
+        exports.handler = async function(event, context) {
+            return {
+              isBase64Encoded: false,
+              statusCode: 500,
+              statusDescription: "500 Internal Server Error",
+              body: "Hello from Lambda (optional)",
+              headers: {
+                "Content-Type": "text/plain"
+              }
+            }
+        };

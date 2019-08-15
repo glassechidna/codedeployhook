@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: go1.x
+      FunctionName: CodeDeployHook_LambdaWebsite
+      Handler: codedeployhook
+      CodeUri: ../codedeployhook
+      MemorySize: 512
+      Timeout: 60
+      AutoPublishAlias: live
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - codedeploy:PutLifecycleEventHookExecutionStatus
+                - codedeploy:GetApplicationRevision
+                - codedeploy:GetDeployment
+                - lambda:InvokeFunction
+              Resource: "*"
