@@ -1,5 +1,16 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: codedeployhook
+    Description: A standard CodeDeploy pre-traffic hook for serverless websites
+    SemanticVersion: "0.1.0"
+    Author: Glass Echidna
+    LicenseUrl: LICENSE.txt
+    ReadmeUrl: README.md
+    Labels: ['lambda', 'serverless', 'codedeploy', 'hook', 'sam', 'traffic']
+    HomePageUrl: https://github.com/glassechidna/codedeployhook
+    SourceCodeUrl: https://github.com/glassechidna/codedeployhook
 Resources:
   Function:
     Type: AWS::Serverless::Function
@@ -8,7 +19,7 @@ Resources:
       FunctionName: CodeDeployHook_LambdaWebsite
       Handler: codedeployhook
       CodeUri: ../codedeployhook
-      MemorySize: 512
+      MemorySize: 256
       Timeout: 60
       AutoPublishAlias: live
       Policies:
@@ -21,3 +32,24 @@ Resources:
                 - codedeploy:GetDeployment
                 - lambda:InvokeFunction
               Resource: "*"
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+Outputs:
+  PreTrafficHook:
+    Value: !Ref Function.Alias
+    Export:
+      Name: PreTrafficHook
+  ServerlessDeploymentRoleArn:
+    Value: !GetAtt Role.Arn
+    Export:
+      Name: ServerlessDeploymentRoleArn
