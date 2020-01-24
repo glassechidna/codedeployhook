@@ -23,5 +23,15 @@ func main() {
 	codedeployhook.AwsRegion = os.Getenv("AWS_REGION")
 
 	h := codedeployhook.NewHandler(codedeploy.New(sess), lambdaapi.New(sess))
+	setenv(&h.Method, "LH_METHOD")
+	setenv(&h.Path, "LH_PATH")
+	setenv(&h.Host, "LH_HOST")
+
 	lambda.Start(h.Handle)
+}
+
+func setenv(target *string, name string) {
+	if val, found := os.LookupEnv(name); found {
+		*target = val
+	}
 }

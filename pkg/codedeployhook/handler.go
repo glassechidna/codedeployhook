@@ -13,12 +13,21 @@ import (
 )
 
 type Handler struct {
+	Method     string
+	Path       string
+	Host       string
 	codedeploy codedeployiface.CodeDeployAPI
 	lambda     lambdaiface.LambdaAPI
 }
 
 func NewHandler(codedeploy codedeployiface.CodeDeployAPI, lambda lambdaiface.LambdaAPI) *Handler {
-	return &Handler{codedeploy: codedeploy, lambda: lambda}
+	return &Handler{
+		Method:     "GET",
+		Path:       "/healthcheck",
+		Host:       "example.com",
+		codedeploy: codedeploy,
+		lambda:     lambda,
+	}
 }
 
 func (h *Handler) Handle(ctx context.Context, event CodeDeployEvent) (err error) {
@@ -56,10 +65,10 @@ func (h *Handler) Handle(ctx context.Context, event CodeDeployEvent) (err error)
 	arn := info.functionArn()
 
 	bytes, err := json.Marshal(events.ALBTargetGroupRequest{
-		HTTPMethod:        "GET",
-		Path:              "/healthcheck",
-		Headers:           map[string]string{"Host": "example.com"},
-		MultiValueHeaders: map[string][]string{"Host": {"example.com"}},
+		HTTPMethod:        h.Method,
+		Path:              h.Path,
+		Headers:           map[string]string{"Host": h.Host},
+		MultiValueHeaders: map[string][]string{"Host": {h.Host}},
 	})
 	if err != nil {
 		return errors.WithStack(err)
